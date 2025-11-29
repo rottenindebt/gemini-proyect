@@ -7,8 +7,8 @@ wheels/
 *.egg-info
 
 # Secrets
-.env/
+.env
 
 # Virtual environments
-.venv
+.venv/
 
