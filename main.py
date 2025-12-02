@@ -1,26 +1,38 @@
 import os
-import sys
+import argparse
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("not prompt provided (usage: main.py \"promt\")")
-        sys.exit(1)
+
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
     
     client = genai.Client(api_key=api_key)
 
+    parser = argparse.ArgumentParser(description="Chatbot", prog="Tiresias", usage='%(prog)s [OPTIONS]')
+    parser.add_argument('-v', '--verbose', action="store_true", help="Enable verbose output")
+    parser.add_argument('user_prompt', type=str, help="Prompt to send to Gemini")
+    args = parser.parse_args()
+
+    messages = [
+        types.Content(role="user", parts=[types.Part(text=args.user_prompt)])
+    ]
+
     response = client.models.generate_content(
-        model='gemini-2.0-flash-001',
-        contents=f"{sys.argv[1:]}"
+        model='gemini-2.5-flash',
+        contents=messages,
     )
 
+    if args.verbose == True:
+        print("User prompt: " + args.user_prompt)
+        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+        print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+
     print(response.text)
-    print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-    print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+
 
 
 if __name__ == "__main__":
